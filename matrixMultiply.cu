@@ -140,9 +140,9 @@ int main( int argc, char **argv ) {
     int iterations = 100;
     float Gflops = 0;
     
-    float *A_h = (float *)malloc( m_size*n_size * sizeof(float));
-    float *B_h = (float *)malloc( m_size*n_size * sizeof(float));
-    float *C_h = (float *)malloc( m_size*n_size * sizeof(float));
+    float *A_h = (float *)malloc( m_size*n_size*sizeof(float));
+    float *B_h = (float *)malloc( m_size*n_size*sizeof(float));
+    float *C_h = (float *)malloc( m_size*n_size*sizeof(float));
 
     float *A_d, *B_d, *C_d;
     cudaMalloc((void**)&A_d, m_size*n_size*sizeof(float));
@@ -170,9 +170,9 @@ int main( int argc, char **argv ) {
 		
     printf( "%s:\tn = %d, %.3f Gflop/s\n", names[i], nmax, Gflops );
 
-    free( A_d );
-    free( B_d );
-    free( C_d );
+    cudaFree( A_d );
+    cudaFree( B_d );
+    cudaFree( C_d );
     free( A_h );
     free( B_h );
     free( C_h );
