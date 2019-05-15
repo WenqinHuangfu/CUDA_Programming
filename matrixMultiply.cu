@@ -138,7 +138,7 @@ int main( int argc, char **argv ) {
     int m_size = 1600, n_size = 1600;
     int width = 1600;
     int iterations = 100;
-    float Gflops = 0;
+    float GFLOPs = 0;
     
     float *A_h = (float *)malloc( m_size*n_size*sizeof(float));
     float *B_h = (float *)malloc( m_size*n_size*sizeof(float));
@@ -161,14 +161,14 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Gflops += 2e-9*width*width*width/seconds;
+        GFLOPs += 2e-9*width*width*width/seconds;
     }
 		
     cudaMemcpy(C_h, C_d, m_size*n_size*sizeof(float), cudaMemcpyDeviceToHost);
 
-    Gflops /= iterations;
+    GFLOPs /= iterations;
 		
-    printf( "%s:\tn = %d, %.3f Gflop/s\n", names[i], nmax, Gflops );
+    printf( "%.3f GFLOPs/s\n", GFLOPs );
 
     cudaFree( A_d );
     cudaFree( B_d );
