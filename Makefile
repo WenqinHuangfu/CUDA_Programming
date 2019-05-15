@@ -31,7 +31,7 @@ LDFLAGS=
 
 EXEC = matrixMultiply.x
 
-all: $(EXEC)
+all:    $(EXEC)
 
 #load cuda in the shell prompt
 #       module load cuda
