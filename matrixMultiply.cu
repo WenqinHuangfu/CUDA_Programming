@@ -161,7 +161,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Gflops += 2e-9*nmax*nmax*nmax/seconds;
+        Gflops += 2e-9*width*width*width/seconds;
     }
 		
     cudaMemcpy(C_h, C_d, m_size*n_size*sizeof(float), cudaMemcpyDeviceToHost);
