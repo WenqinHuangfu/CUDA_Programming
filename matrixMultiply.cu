@@ -70,8 +70,8 @@ void multMat6( int n, float *A, float *B, float *C ) {
 __global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float* devP, const int width){
 	int TILE_WIDTH = 16;
 	
-	__shared__ float sM[TILE_WIDTH][TILE_WIDTH];
-	__shared__ float sN[TILE_WIDTH][TILE_WIDTH];
+	__shared__ float sM[16][16];
+	__shared__ float sN[16][16];
 	
 	int bx = blockIdx.x;
 	int by = blockIdx.y;
@@ -136,7 +136,7 @@ int main( int argc, char **argv ) {
     
     // GPU implementation
     int m_size = 1600, n_size = 1600;
-    int width = 1600
+    int width = 1600;
     int iterations = 100;
     float Gflops = 0;
     
@@ -151,20 +151,20 @@ int main( int argc, char **argv ) {
     cudaMemcpy(A_d, A_h, m_size*n_size, cudaMemcpyHostToDevice);
     cudaMemcpy(B_d, B_h, m_size*n_size, cudaMemcpyHostToDevice);
 		
-		for (int i = 0; i < iterations; i++) {
-			gettimeofday( &start, NULL );
-			MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, width);
-			gettimeofday( &end, NULL );
+    for (int i = 0; i < iterations; i++) {
+        gettimeofday( &start, NULL );
+        MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, width);
+        gettimeofday( &end, NULL );
 			
-			double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-			Gflops += 2e-9*nmax*nmax*nmax/seconds;
-		}
+        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        Gflops += 2e-9*nmax*nmax*nmax/seconds;
+    }
 		
-		cudaMemcpy(C_h, C_d, m_size*n_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C_h, C_d, m_size*n_size, cudaMemcpyDeviceToHost);
 
-		Gflops /= iterations;
+    Gflops /= iterations;
 		
-		printf( "%s:\tn = %d, %.3f Gflop/s\n", names[i], nmax, Gflops );
+    printf( "%s:\tn = %d, %.3f Gflop/s\n", names[i], nmax, Gflops );
 
     free( A_h );
     free( B_h );
