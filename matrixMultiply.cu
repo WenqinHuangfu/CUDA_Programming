@@ -67,7 +67,9 @@ void multMat6( int n, float *A, float *B, float *C ) {
                 C[i+j*n] += A[i+k*n]*B[k+j*n];
 }
 
-__global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float* devP, const int width, const int TILE_WIDTH ){
+__global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float* devP, const int width){
+	int TILE_WIDTH = 16;
+	
 	__shared__ float sM[TILE_WIDTH][TILE_WIDTH];
 	__shared__ float sN[TILE_WIDTH][TILE_WIDTH];
 	
@@ -83,12 +85,12 @@ __global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float*
 	
 	for (int m = 0; m < width / TILE_WIDTH; m++) {
 		sM[ty][tx] = devM[row *width+(m*TILE_WIDTH + tx)];
-		sN[ty][tx] = devN[col+(m *TILE_WIDTH+ty)* Width];
+		sN[ty][tx] = devN[col+(m *TILE_WIDTH+ty)*width];
 		__syncthreads();
 		
 		for (int k = 0; k < TILE_WIDTH; ++k)
-			Pvalue += sM[ty][k] * sN[k][tx];
-		__synchthreads();
+			pValue += sM[ty][k] * sN[k][tx];
+		__syncthreads();
 	}
 	
 	devP[row * width + col] = pValue;
@@ -134,8 +136,7 @@ int main( int argc, char **argv ) {
     
     // GPU implementation
     int m_size = 1600, n_size = 1600;
-    int width = 1600;
-    int TILE_WIDTH = 16;
+    int width = 1600
     int iterations = 100;
     float Gflops = 0;
     
@@ -152,7 +153,7 @@ int main( int argc, char **argv ) {
 		
 		for (int i = 0; i < iterations; i++) {
 			gettimeofday( &start, NULL );
-			MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, width, TILE_WIDTH)
+			MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, width);
 			gettimeofday( &end, NULL );
 			
 			double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
