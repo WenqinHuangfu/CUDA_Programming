@@ -148,8 +148,8 @@ int main( int argc, char **argv ) {
     dim3 dimGrid(100, 100, 1);
     dim3 dimBlock(16, 16, 1);
     
-    cudaMemcpy(A_d, A_h, m_size*n_size, cudaMemcpyHostToDevice);
-    cudaMemcpy(B_d, B_h, m_size*n_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(A_d, A_h, m_size*n_size*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(B_d, B_h, m_size*n_size*sizeof(float), cudaMemcpyHostToDevice);
 		
     for (int i = 0; i < iterations; i++) {
         gettimeofday( &start, NULL );
