@@ -143,7 +143,11 @@ int main( int argc, char **argv ) {
     float *A_h = (float *)malloc( m_size*n_size * sizeof(float));
     float *B_h = (float *)malloc( m_size*n_size * sizeof(float));
     float *C_h = (float *)malloc( m_size*n_size * sizeof(float));
+
     float *A_d, *B_d, *C_d;
+    cudaMalloc((void**)&A_d, m_size*n_size*sizeof(float));
+    cudaMalloc((void**)&B_d, m_size*n_size*sizeof(float));
+    cudaMalloc((void**)&C_d, m_size*n_size*sizeof(float));
     
     dim3 dimGrid(100, 100, 1);
     dim3 dimBlock(16, 16, 1);
@@ -166,12 +170,12 @@ int main( int argc, char **argv ) {
 		
     printf( "%s:\tn = %d, %.3f Gflop/s\n", names[i], nmax, Gflops );
 
-    free( A_h );
-    free( B_h );
-    free( C_h );
     free( A_d );
     free( B_d );
     free( C_d );
+    free( A_h );
+    free( B_h );
+    free( C_h );
 
     printf("\n\n");
 
