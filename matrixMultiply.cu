@@ -160,7 +160,7 @@ int main( int argc, char **argv ) {
         Gflops += 2e-9*nmax*nmax*nmax/seconds;
     }
 		
-    cudaMemcpy(C_h, C_d, m_size*n_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C_h, C_d, m_size*n_size*sizeof(float), cudaMemcpyDeviceToHost);
 
     Gflops /= iterations;
 		
