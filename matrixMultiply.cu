@@ -67,7 +67,7 @@ void multMat6( int n, float *A, float *B, float *C ) {
                 C[i+j*n] += A[i+k*n]*B[k+j*n];
 }
 
-__global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float* devP, const int width){
+__global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float* devP, const int width, const int TILE_WIDTH ){
 	__shared__ float sM[TILE_WIDTH][TILE_WIDTH];
 	__shared__ float sN[TILE_WIDTH][TILE_WIDTH];
 	
@@ -96,6 +96,7 @@ __global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float*
 
 /* uses timing features from sys/time.h that you haven't seen before */
 int main( int argc, char **argv ) {
+    // CPU implementation
     int nmax = 1000,i;
 
     void (*orderings[])(int,float *,float *,float *) =
@@ -133,14 +134,15 @@ int main( int argc, char **argv ) {
     
     // GPU implementation
     int m_size = 1600, n_size = 1600;
-    int width = 16;
+    int width = 1600;
+    int TILE_WIDTH = 16;
     int iterations = 100;
     float Gflops = 0;
     
     float *A_h = (float *)malloc( m_size*n_size * sizeof(float));
     float *B_h = (float *)malloc( m_size*n_size * sizeof(float));
     float *C_h = (float *)malloc( m_size*n_size * sizeof(float));
-    float* A_d, B_d, C_d;
+    float *A_d, *B_d, *C_d;
     
     dim3 dimGrid(100, 100, 1);
     dim3 dimBlock(16, 16, 1);
@@ -150,7 +152,7 @@ int main( int argc, char **argv ) {
 		
 		for (int i = 0; i < iterations; i++) {
 			gettimeofday( &start, NULL );
-			MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, const int width)
+			MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, width, TILE_WIDTH)
 			gettimeofday( &end, NULL );
 			
 			double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
