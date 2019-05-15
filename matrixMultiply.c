@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
-
+#include <cuda.h>
 
 /* To save you time, we are including all 6 variants of the loop ordering
    as separate functions and then calling them using function pointers.
@@ -137,16 +137,16 @@ int main( int argc, char **argv ) {
     int iterations = 100;
     float Gflops = 0;
     
-    float *A = (float *)malloc( m_size*n_size * sizeof(float));
-    float *B = (float *)malloc( m_size*n_size * sizeof(float));
-    float *C = (float *)malloc( m_size*n_size * sizeof(float));
+    float *A_h = (float *)malloc( m_size*n_size * sizeof(float));
+    float *B_h = (float *)malloc( m_size*n_size * sizeof(float));
+    float *C_h = (float *)malloc( m_size*n_size * sizeof(float));
     float* A_d, B_d, C_d;
     
     dim3 dimGrid(100, 100, 1);
     dim3 dimBlock(16, 16, 1);
     
-    cudaMemcpy(A_d, A, m_size*n_size, cudaMemcpyHostToDevice);
-    cudaMemcpy(B_d, B, m_size*n_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(A_d, A_h, m_size*n_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(B_d, B_h, m_size*n_size, cudaMemcpyHostToDevice);
 		
 		for (int i = 0; i < iterations; i++) {
 			gettimeofday( &start, NULL );
@@ -157,15 +157,15 @@ int main( int argc, char **argv ) {
 			Gflops += 2e-9*nmax*nmax*nmax/seconds;
 		}
 		
-		cudaMemcpy(C, C_d, m_size*n_size, cudaMemcpyDeviceToHost);
+		cudaMemcpy(C_h, C_d, m_size*n_size, cudaMemcpyDeviceToHost);
 
 		Gflops /= iterations;
 		
 		printf( "%s:\tn = %d, %.3f Gflop/s\n", names[i], nmax, Gflops );
 
-    free( A );
-    free( B );
-    free( C );
+    free( A_h );
+    free( B_h );
+    free( C_h );
     free( A_d );
     free( B_d );
     free( C_d );
