@@ -31,19 +31,19 @@ LDFLAGS=
 
 EXEC = matrixMultiply.x
 
-all:    $(EXEC)
+all: $(EXEC)
 
 #load cuda in the shell prompt
 #       module load cuda
 
 matrixMultiply.x: matrixMultiply.cu
-        $(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 submitGEMM:
-        sbatch -v hello.job
+	sbatch -v hello.job
 
 #.c.o:
 #       $(CC)  $(CFLAGS) -c $<
 
 clean:
-        rm  $(EXEC)
+	rm  $(EXEC)
