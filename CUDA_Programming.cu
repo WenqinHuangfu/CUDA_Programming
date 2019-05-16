@@ -271,7 +271,7 @@ int main( int argc, char **argv ) {
     int m_size2 = 1024, n_size2 = 1024;
     int width2 = 1024;
     int iterations2 = 100;
-    float GFLOPs = 0;
+    float Mem_Acc_Rate[5] = {0};
 
     float *A_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
     float *B_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
@@ -290,7 +290,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        GFLOPs += 2e-9*width1*width1*width1/seconds;
+        Mem_Acc_Rate[0] += 2e-9*width1*width1*width1/seconds;
     }
 
     return 0;
