@@ -294,6 +294,12 @@ int main( int argc, char **argv ) {
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         Mem_Acc_Rate[0] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
+	
+    cudaFree( A_d2 );
+    cudaFree( B_d2 );
+    cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
+    cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
+    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 
     // Matrix copy with shared memory
     for (int i = 0; i < iterations2; i++) {
@@ -304,6 +310,12 @@ int main( int argc, char **argv ) {
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         Mem_Acc_Rate[1] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
+
+    cudaFree( A_d2 );
+    cudaFree( B_d2 );
+    cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
+    cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
+    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Native transpose
     for (int i = 0; i < iterations2; i++) {
@@ -314,6 +326,12 @@ int main( int argc, char **argv ) {
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         Mem_Acc_Rate[2] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
+
+    cudaFree( A_d2 );
+    cudaFree( B_d2 );
+    cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
+    cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
+    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Coalesced transpose with block shared memory
     for (int i = 0; i < iterations2; i++) {
@@ -325,6 +343,12 @@ int main( int argc, char **argv ) {
         Mem_Acc_Rate[3] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
 	
+    cudaFree( A_d2 );
+    cudaFree( B_d2 );
+    cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
+    cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
+    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
+	
     // Coalesced transpose with shared memory and matrix padding
     for (int i = 0; i < iterations2; i++) {
         gettimeofday( &start, NULL );
@@ -334,6 +358,12 @@ int main( int argc, char **argv ) {
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
+
+    cudaFree( A_d2 );
+    cudaFree( B_d2 );
+    cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
+    cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
+    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 
     cudaMemcpy(B_h2, B_d2, m_size2*n_size2*sizeof(float), cudaMemcpyDeviceToHost);
 	
