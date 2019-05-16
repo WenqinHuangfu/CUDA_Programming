@@ -16,6 +16,7 @@
 
 const int TILE_WIDTH_GEMM = 16;
 const int TILE_DIM = 32;
+const int BLOCK_ROWS = 8;
 
 void multMat1( int n, float *A, float *B, float *C ) {
     int i,j,k;
