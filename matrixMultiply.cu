@@ -13,6 +13,10 @@
    unfairly bias results (lower cases in switches must run through more
    case statements on each iteration).
 */
+
+const int TILE_WIDTH_GEMM = 16;
+const int TILE_DIM = 32;
+
 void multMat1( int n, float *A, float *B, float *C ) {
     int i,j,k;
     /* This is ijk loop order. */
@@ -67,33 +71,116 @@ void multMat6( int n, float *A, float *B, float *C ) {
                 C[i+j*n] += A[i+k*n]*B[k+j*n];
 }
 
+/* Question 1 */
+// GPU based GEMM with SM-specific shared memory
 __global__ void MatrixMultiplyKernel(const float* devM, const float* devN,float* devP, const int width){
-	int TILE_WIDTH = 16;
-	
-	__shared__ float sM[16][16];
-	__shared__ float sN[16][16];
+	__shared__ float sM[TILE_WIDTH_GEMM][TILE_WIDTH_GEMM];
+	__shared__ float sN[TILE_WIDTH_GEMM][TILE_WIDTH_GEMM];
 	
 	int bx = blockIdx.x;
 	int by = blockIdx.y;
 	int tx = threadIdx.x;
 	int ty = threadIdx.y;
-	int col = bx * TILE_WIDTH + bx;
-	int row = by * TILE_WIDTH + ty;
+	int col = bx * TILE_WIDTH_GEMM + bx;
+	int row = by * TILE_WIDTH_GEMM + ty;
 	
 	// Initialize accumulator to 0. Then multiply/add
 	float pValue = 0;
 	
-	for (int m = 0; m < width / TILE_WIDTH; m++) {
-		sM[ty][tx] = devM[row *width+(m*TILE_WIDTH + tx)];
-		sN[ty][tx] = devN[col+(m *TILE_WIDTH+ty)*width];
+	for (int m = 0; m < width / TILE_WIDTH_GEMM; m++) {
+		sM[ty][tx] = devM[row *width+(m*TILE_WIDTH_GEMM + tx)];
+		sN[ty][tx] = devN[col+(m *TILE_WIDTH_GEMM+ty)*width];
 		__syncthreads();
 		
-		for (int k = 0; k < TILE_WIDTH; ++k)
+		for (int k = 0; k < TILE_WIDTH_GEMM; ++k)
 			pValue += sM[ty][k] * sN[k][tx];
 		__syncthreads();
 	}
 	
 	devP[row * width + col] = pValue;
+}
+
+/* Question 2 */
+// Simple matrix copying
+__global__ void copy(float *odata, const float *idata)
+{
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
+
+  for (int j = 0; j < TILE_DIM; j+= BLOCK_ROWS)
+    odata[(y+j)*width + x] = idata[(y+j)*width + x];
+}
+
+// Matrix copy with shared memory
+__global__ void copySharedMem(float *odata, const float *idata)
+{
+  __shared__ float tile[TILE_DIM * TILE_DIM];
+  
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     tile[(threadIdx.y+j)*TILE_DIM + threadIdx.x] = idata[(y+j)*width + x];
+
+  __syncthreads();
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     odata[(y+j)*width + x] = tile[(threadIdx.y+j)*TILE_DIM + threadIdx.x];          
+}
+
+// Native transpose
+__global__ void transposeNaive(float *odata, const float *idata)
+{
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
+
+  for (int j = 0; j < TILE_DIM; j+= BLOCK_ROWS)
+    odata[x*width + (y+j)] = idata[(y+j)*width + x];
+}
+
+// Coalesced transpose with block shared memory
+__global__ void transposeCoalesced(float *odata, const float *idata)
+{
+  __shared__ float tile[TILE_DIM][TILE_DIM];
+    
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
+
+  __syncthreads();
+
+  x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
+  y = blockIdx.x * TILE_DIM + threadIdx.y;
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
+}
+
+// Coalesced transpose with shared memory and matrix padding
+__global__ void transposeNoBankConflicts(float *odata, const float *idata)
+{
+  __shared__ float tile[TILE_DIM][TILE_DIM+1];
+    
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
+
+  __syncthreads();
+
+  x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
+  y = blockIdx.x * TILE_DIM + threadIdx.y;
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
 }
 
 /* uses timing features from sys/time.h that you haven't seen before */
