@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <cuda.h>
+#include <assert.h>
 
 /* To save you time, we are including all 6 variants of the loop ordering
    as separate functions and then calling them using function pointers.
@@ -292,7 +293,7 @@ int main( int argc, char **argv ) {
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     
     // Simple matrix copying
-    checkCuda( cudaEventRecord(startEvent, 0));
+    checkCuda( cudaEventRecord(startEvent2, 0));
     for (int i = 0; i < iterations2; i++) {
         //gettimeofday( &start, NULL );
         copy<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
@@ -301,14 +302,14 @@ int main( int argc, char **argv ) {
         //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         //Mem_Acc_Rate[0] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
-    checkCuda( cudaEventRecord(stopEvent, 0) );
-    checkCuda( cudaEventSynchronize(stopEvent) );
-    checkCuda( cudaEventElapsedTime(&ms2, startEvent, stopEvent) );
+    checkCuda( cudaEventRecord(stopEvent2, 0) );
+    checkCuda( cudaEventSynchronize(stopEvent2) );
+    checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[0] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
 
     // Matrix copy with shared memory
-    checkCuda( cudaEventRecord(startEvent, 0));
+    checkCuda( cudaEventRecord(startEvent2, 0));
     for (int i = 0; i < iterations2; i++) {
         //gettimeofday( &start, NULL );
         copySharedMem<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
@@ -317,15 +318,15 @@ int main( int argc, char **argv ) {
         //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         //Mem_Acc_Rate[1] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
-    checkCuda( cudaEventRecord(stopEvent, 0) );
-    checkCuda( cudaEventSynchronize(stopEvent) );
-    checkCuda( cudaEventElapsedTime(&ms2, startEvent, stopEvent) );
+    checkCuda( cudaEventRecord(stopEvent2, 0) );
+    checkCuda( cudaEventSynchronize(stopEvent2) );
+    checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[1] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Native transpose
-    checkCuda( cudaEventRecord(startEvent, 0));
+    checkCuda( cudaEventRecord(startEvent2, 0));
     for (int i = 0; i < iterations2; i++) {
         //gettimeofday( &start, NULL );
         transposeNaive<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
@@ -334,15 +335,15 @@ int main( int argc, char **argv ) {
         //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         //Mem_Acc_Rate[2] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
-    checkCuda( cudaEventRecord(stopEvent, 0) );
-    checkCuda( cudaEventSynchronize(stopEvent) );
-    checkCuda( cudaEventElapsedTime(&ms2, startEvent, stopEvent) );
+    checkCuda( cudaEventRecord(stopEvent2, 0) );
+    checkCuda( cudaEventSynchronize(stopEvent2) );
+    checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[2] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Coalesced transpose with block shared memory
-    checkCuda( cudaEventRecord(startEvent, 0));
+    checkCuda( cudaEventRecord(startEvent2, 0));
     for (int i = 0; i < iterations2; i++) {
         //gettimeofday( &start, NULL );
         transposeCoalesced<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
@@ -351,15 +352,15 @@ int main( int argc, char **argv ) {
         //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         //Mem_Acc_Rate[3] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
-    checkCuda( cudaEventRecord(stopEvent, 0) );
-    checkCuda( cudaEventSynchronize(stopEvent) );
-    checkCuda( cudaEventElapsedTime(&ms2, startEvent, stopEvent) );
+    checkCuda( cudaEventRecord(stopEvent2, 0) );
+    checkCuda( cudaEventSynchronize(stopEvent2) );
+    checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[3] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Coalesced transpose with shared memory and matrix padding
-    checkCuda( cudaEventRecord(startEvent, 0));
+    checkCuda( cudaEventRecord(startEvent2, 0));
     for (int i = 0; i < iterations2; i++) {
         //gettimeofday( &start, NULL );
         transposeNoBankConflicts<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
@@ -368,9 +369,9 @@ int main( int argc, char **argv ) {
         //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         //Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
-    checkCuda( cudaEventRecord(stopEvent, 0) );
-    checkCuda( cudaEventSynchronize(stopEvent) );
-    checkCuda( cudaEventElapsedTime(&ms2, startEvent, stopEvent) );
+    checkCuda( cudaEventRecord(stopEvent2, 0) );
+    checkCuda( cudaEventSynchronize(stopEvent2) );
+    checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[4] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(B_h2, B_d2, m_size2*n_size2*sizeof(float), cudaMemcpyDeviceToHost);
