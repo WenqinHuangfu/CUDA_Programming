@@ -275,9 +275,9 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent1, 0) );
     checkCuda( cudaEventSynchronize(stopEvent1) );
     checkCuda( cudaEventElapsedTime(&ms1, startEvent1, stopEvent1) );
-    printf( "Simple matrix copying time: %.3f ms\n", ms2 );
+    printf( "Simple matrix copying time: %.3f ms\n", ms1 );
     cudaMemcpy(C_h1, C_d1, m_size1*n_size1*sizeof(float), cudaMemcpyDeviceToHost);
-    Mem_Acc_Rate[0] = iterations1*2*width1*width1*sizeof(float)/(ms1*1e-3)/(float)(1e9);
+    GFLOPs = iterations1*2e-9*width1*width1*width1/(ms1*1e-3);
 		
     printf( "GPU based GEMM: %.3f GFLOPs/s\n", GFLOPs );
 
