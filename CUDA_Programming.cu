@@ -200,7 +200,7 @@ __global__ void transposeNoBankConflicts(float *odata, const float *idata)
 /* uses timing features from sys/time.h that you haven't seen before */
 int main( int argc, char **argv ) {
     // CPU implementation
-    int nmax = 1000,i;
+    int nmax = 1000, i;
 
     void (*orderings[])(int,float *,float *,float *) =
         {&multMat1,&multMat2,&multMat3,&multMat4,&multMat5,&multMat6};
@@ -275,10 +275,10 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent1, 0) );
     checkCuda( cudaEventSynchronize(stopEvent1) );
     checkCuda( cudaEventElapsedTime(&ms1, startEvent1, stopEvent1) );
-    printf( "Simple matrix copying time: %.3f ms\n", ms1 );
+    printf( "GPU based GEMM time: %.3f ms\n", ms1 );
     cudaMemcpy(C_h1, C_d1, m_size1*n_size1*sizeof(float), cudaMemcpyDeviceToHost);
     GFLOPs = iterations1*2e-9*width1*width1*width1/(ms1*1e-3);
-		
+    
     printf( "GPU based GEMM: %.3f GFLOPs/s\n", GFLOPs );
 
     cudaFree( A_d1 );
@@ -347,7 +347,6 @@ int main( int argc, char **argv ) {
     printf( "Matrix copy with shared memory time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[1] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
-    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Native transpose
     checkCuda( cudaEventRecord(startEvent2, 0));
@@ -365,7 +364,6 @@ int main( int argc, char **argv ) {
     printf( "Native transpose time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[2] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
-    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Coalesced transpose with block shared memory
     checkCuda( cudaEventRecord(startEvent2, 0));
@@ -383,7 +381,6 @@ int main( int argc, char **argv ) {
     printf( "Coalesced transpose with block shared memory time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[3] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
-    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
 	
     // Coalesced transpose with shared memory and matrix padding
     checkCuda( cudaEventRecord(startEvent2, 0));
@@ -401,7 +398,6 @@ int main( int argc, char **argv ) {
     printf( "Coalesced transpose with shared memory and matrix padding time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[4] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
-    cudaMemcpy(B_h2, B_d2, m_size2*n_size2*sizeof(float), cudaMemcpyDeviceToHost);
 	
     printf( "Simple matrix copying: %.3f GB/s\n", Mem_Acc_Rate[0] );
     printf( "Matrix copy with shared memory: %.3f GB/s\n", Mem_Acc_Rate[1] );
