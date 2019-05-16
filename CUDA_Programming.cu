@@ -256,7 +256,7 @@ int main( int argc, char **argv ) {
 
     GFLOPs /= iterations1;
 		
-    printf( "%.3f GFLOPs/s\n", GFLOPs );
+    printf( "GPU based GEMM: %.3f GFLOPs/s\n", GFLOPs );
 
     cudaFree( A_d1 );
     cudaFree( B_d1 );
@@ -290,8 +290,58 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Mem_Acc_Rate[0] += 2e-9*width1*width1*width1/seconds;
+        Mem_Acc_Rate[0] += 2*width2*width2*sizeof(float)/seconds;
     }
+
+    // Matrix copy with shared memory
+    for (int i = 0; i < iterations2; i++) {
+        gettimeofday( &start, NULL );
+        copySharedMem<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
+        gettimeofday( &end, NULL );
+			
+        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        Mem_Acc_Rate[1] += 2*width2*width2*sizeof(float)/seconds;
+    }
+	
+    // Native transpose
+    for (int i = 0; i < iterations2; i++) {
+        gettimeofday( &start, NULL );
+        transposeNaive<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
+        gettimeofday( &end, NULL );
+			
+        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        Mem_Acc_Rate[2] += 2*width2*width2*sizeof(float)/seconds;
+    }
+	
+    // Coalesced transpose with block shared memory
+    for (int i = 0; i < iterations2; i++) {
+        gettimeofday( &start, NULL );
+        transposeCoalesced<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
+        gettimeofday( &end, NULL );
+			
+        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        Mem_Acc_Rate[3] += 2*width2*width2*sizeof(float)/seconds;
+    }
+	
+    // Coalesced transpose with shared memory and matrix padding
+    for (int i = 0; i < iterations2; i++) {
+        gettimeofday( &start, NULL );
+        transposeNoBankConflicts<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
+        gettimeofday( &end, NULL );
+			
+        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds;
+    }
+	
+    for (int i = 0; i < 5; i++) {
+    	Mem_Acc_Rate[i] /= iterations2;
+    }
+	
+    printf( "Simple matrix copying: %.3f \n", Mem_Acc_Rate[0] );
+    printf( "Matrix copy with shared memory: %.3f \n", Mem_Acc_Rate[1] );
+    printf( "Native transpose: %.3f \n", Mem_Acc_Rate[2] );
+    printf( "Coalesced transpose with block shared memory: %.3f \n", Mem_Acc_Rate[3] );
+    printf( "Coalesced transpose with shared memory and matrix padding: %.3f \n", Mem_Acc_Rate[4] );
 
     return 0;
 }
