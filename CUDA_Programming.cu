@@ -239,6 +239,7 @@ int main( int argc, char **argv ) {
     int m_size1 = 1600, n_size1 = 1600;
     int width1 = 1600;
     int iterations1 = 100;
+    float ms1 = 0;
     float GFLOPs = 0;
     
     float *A_h1 = (float *)malloc( m_size1*n_size1*sizeof(float));
@@ -250,24 +251,33 @@ int main( int argc, char **argv ) {
     cudaMalloc((void**)&B_d1, m_size1*n_size1*sizeof(float));
     cudaMalloc((void**)&C_d1, m_size1*n_size1*sizeof(float));
     
-    dim3 dimGrid1(1, 1, 1);
-    dim3 dimBlock1(1, 1, 1);
+    // events for timing
+    cudaEvent_t startEvent1, stopEvent1;
+    checkCuda(cudaEventCreate(&startEvent1));
+    checkCuda(cudaEventCreate(&stopEvent1));
+	
+    dim3 dimGrid1(width1/TILE_WIDTH_GEMM, width1/TILE_WIDTH_GEMM, 1);
+    dim3 dimBlock1(TILE_WIDTH_GEMM, TILE_WIDTH_GEMM, 1);
     
     cudaMemcpy(A_d1, A_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(B_d1, B_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
-		
+    
+    // GPU based GEMM
+    checkCuda( cudaEventRecord(startEvent1, 0));
     for (int i = 0; i < iterations1; i++) {
-        gettimeofday( &start, NULL );
+        //gettimeofday( &start, NULL );
         MatrixMultiplyKernel<<<dimGrid1, dimBlock1>>>(A_d1, B_d1, C_d1, width1);
-        gettimeofday( &end, NULL );
+        //gettimeofday( &end, NULL );
 			
-        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        GFLOPs += 2e-9*width1*width1*width1/seconds;
+        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        //GFLOPs += 2e-9*width1*width1*width1/seconds;
     }
-		
+    checkCuda( cudaEventRecord(stopEvent1, 0) );
+    checkCuda( cudaEventSynchronize(stopEvent1) );
+    checkCuda( cudaEventElapsedTime(&ms1, startEvent1, stopEvent1) );
+    printf( "Simple matrix copying time: %.3f ms\n", ms2 );
     cudaMemcpy(C_h1, C_d1, m_size1*n_size1*sizeof(float), cudaMemcpyDeviceToHost);
-
-    GFLOPs /= iterations1;
+    Mem_Acc_Rate[0] = iterations1*2*width1*width1*sizeof(float)/(ms1*1e-3)/(float)(1e9);
 		
     printf( "GPU based GEMM: %.3f GFLOPs/s\n", GFLOPs );
 
@@ -285,7 +295,7 @@ int main( int argc, char **argv ) {
     int width2 = 1024;
     int iterations2 = 100;
     float Mem_Acc_Rate[5] = {0};
-    float ms2;
+    float ms2 = 0;
 
     float *A_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
     float *B_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
@@ -392,10 +402,6 @@ int main( int argc, char **argv ) {
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[4] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
     cudaMemcpy(B_h2, B_d2, m_size2*n_size2*sizeof(float), cudaMemcpyDeviceToHost);
-	
-    for (int i = 0; i < 5; i++) {
-    	Mem_Acc_Rate[i] /= iterations2;
-    }
 	
     printf( "Simple matrix copying: %.3f GB/s\n", Mem_Acc_Rate[0] );
     printf( "Matrix copy with shared memory: %.3f GB/s\n", Mem_Acc_Rate[1] );
