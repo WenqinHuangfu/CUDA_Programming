@@ -237,15 +237,15 @@ int main( int argc, char **argv ) {
     cudaMalloc((void**)&B_d1, m_size1*n_size1*sizeof(float));
     cudaMalloc((void**)&C_d1, m_size1*n_size1*sizeof(float));
     
-    dim3 dimGrid(1, 1, 1);
-    dim3 dimBlock(1, 1, 1);
+    dim3 dimGrid1(1, 1, 1);
+    dim3 dimBlock1(1, 1, 1);
     
     cudaMemcpy(A_d1, A_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(B_d1, B_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
 		
     for (int i = 0; i < iterations1; i++) {
         gettimeofday( &start, NULL );
-        MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d1, B_d1, C_d1, width1);
+        MatrixMultiplyKernel<<<dimGrid1, dimBlock1>>>(A_d1, B_d1, C_d1, width1);
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
@@ -268,6 +268,30 @@ int main( int argc, char **argv ) {
     printf("\n\n");
 	
     // HW2: Question 2
+    int m_size2 = 1024, n_size2 = 1024;
+    int width2 = 1024;
+    int iterations2 = 100;
+    float GFLOPs = 0;
+
+    float *A_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
+    float *B_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
+
+    float *A_d2, *B_d2;
+    cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
+    cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
+    
+    dim3 dimGrid2(1, 1, 1);
+    dim3 dimBlock2(1, 1, 1);
+    
+    // Simple matrix copying
+    for (int i = 0; i < iterations2; i++) {
+        gettimeofday( &start, NULL );
+        copy<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
+        gettimeofday( &end, NULL );
+			
+        double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
+        GFLOPs += 2e-9*width1*width1*width1/seconds;
+    }
 
     return 0;
 }
