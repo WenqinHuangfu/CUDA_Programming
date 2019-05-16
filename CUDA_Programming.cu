@@ -398,6 +398,8 @@ int main( int argc, char **argv ) {
     printf( "Coalesced transpose with shared memory and matrix padding time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[4] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
+
+    printf("\n");
 	
     printf( "Simple matrix copying: %.3f GB/s\n", Mem_Acc_Rate[0] );
     printf( "Matrix copy with shared memory: %.3f GB/s\n", Mem_Acc_Rate[1] );
