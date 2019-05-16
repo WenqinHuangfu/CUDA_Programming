@@ -317,6 +317,7 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
+    printf( "Time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[0] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
 
@@ -333,6 +334,7 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
+    printf( "Time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[1] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
@@ -350,6 +352,7 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
+    printf( "Time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[2] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
@@ -367,6 +370,7 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
+    printf( "Time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[3] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
@@ -384,6 +388,7 @@ int main( int argc, char **argv ) {
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
+    printf( "Time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[4] += iterations2*2*width2*width2*sizeof(float)/(ms2/1e-3)/(float)(1e9);
     cudaMemcpy(B_h2, B_d2, m_size2*n_size2*sizeof(float), cudaMemcpyDeviceToHost);
