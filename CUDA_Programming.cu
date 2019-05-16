@@ -233,9 +233,9 @@ int main( int argc, char **argv ) {
     free( B );
     free( C );
     
-    printf("\n\n");
+    printf("\n");
     
-    // HW2: Question 1
+	
     int m_size1 = 1600, n_size1 = 1600;
     int width1 = 1600;
     int iterations1 = 100;
@@ -251,7 +251,6 @@ int main( int argc, char **argv ) {
     cudaMalloc((void**)&B_d1, m_size1*n_size1*sizeof(float));
     cudaMalloc((void**)&C_d1, m_size1*n_size1*sizeof(float));
     
-    // events for timing
     cudaEvent_t startEvent1, stopEvent1;
     checkCuda(cudaEventCreate(&startEvent1));
     checkCuda(cudaEventCreate(&stopEvent1));
@@ -262,23 +261,17 @@ int main( int argc, char **argv ) {
     cudaMemcpy(A_d1, A_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(B_d1, B_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
     
-    // GPU based GEMM
+	
     checkCuda( cudaEventRecord(startEvent1, 0));
-    for (int i = 0; i < iterations1; i++) {
-        //gettimeofday( &start, NULL );
+    for (int i = 0; i < iterations1; i++)
         MatrixMultiplyKernel<<<dimGrid1, dimBlock1>>>(A_d1, B_d1, C_d1, width1);
-        //gettimeofday( &end, NULL );
-			
-        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        //GFLOPs += 2e-9*width1*width1*width1/seconds;
-    }
     checkCuda( cudaEventRecord(stopEvent1, 0) );
     checkCuda( cudaEventSynchronize(stopEvent1) );
     checkCuda( cudaEventElapsedTime(&ms1, startEvent1, stopEvent1) );
-    printf( "GPU based GEMM time: %.3f ms\n", ms1 );
     cudaMemcpy(C_h1, C_d1, m_size1*n_size1*sizeof(float), cudaMemcpyDeviceToHost);
     GFLOPs = iterations1*2e-9*width1*width1*width1/(ms1*1e-3);
     
+	
     printf( "GPU based GEMM: %.3f GFLOPs/s\n", GFLOPs );
 
     cudaFree( A_d1 );
@@ -288,9 +281,9 @@ int main( int argc, char **argv ) {
     free( B_h1 );
     free( C_h1 );
 
-    printf("\n\n");
+    printf("\n");
+
 	
-    // HW2: Question 2
     int m_size2 = 1024, n_size2 = 1024;
     int width2 = 1024;
     int iterations2 = 100;
@@ -303,8 +296,6 @@ int main( int argc, char **argv ) {
     float *A_d2, *B_d2;
     cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
     cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
-	
-    // events for timing
     cudaEvent_t startEvent2, stopEvent2;
     checkCuda(cudaEventCreate(&startEvent2));
     checkCuda(cudaEventCreate(&stopEvent2));
@@ -314,92 +305,56 @@ int main( int argc, char **argv ) {
 	
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     
-    // Simple matrix copying
+
     checkCuda( cudaEventRecord(startEvent2, 0));
-    for (int i = 0; i < iterations2; i++) {
-        //gettimeofday( &start, NULL );
+    for (int i = 0; i < iterations2; i++)
         copy<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
-        //gettimeofday( &end, NULL );
-			
-        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        //Mem_Acc_Rate[0] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
-    }
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
-    printf( "Simple matrix copying time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[0] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
 
-    // Matrix copy with shared memory
+
     checkCuda( cudaEventRecord(startEvent2, 0));
-    for (int i = 0; i < iterations2; i++) {
-        //gettimeofday( &start, NULL );
+    for (int i = 0; i < iterations2; i++)
         copySharedMem<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
-        //gettimeofday( &end, NULL );
-			
-        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        //Mem_Acc_Rate[1] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
-    }
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
-    printf( "Matrix copy with shared memory time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[1] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
 	
-    // Native transpose
+	
     checkCuda( cudaEventRecord(startEvent2, 0));
-    for (int i = 0; i < iterations2; i++) {
-        //gettimeofday( &start, NULL );
+    for (int i = 0; i < iterations2; i++)
         transposeNaive<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
-        //gettimeofday( &end, NULL );
-			
-        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        //Mem_Acc_Rate[2] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
-    }
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
-    printf( "Native transpose time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[2] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
 	
-    // Coalesced transpose with block shared memory
+	
     checkCuda( cudaEventRecord(startEvent2, 0));
-    for (int i = 0; i < iterations2; i++) {
-        //gettimeofday( &start, NULL );
+    for (int i = 0; i < iterations2; i++)
         transposeCoalesced<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
-        //gettimeofday( &end, NULL );
-			
-        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        //Mem_Acc_Rate[3] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
-    }
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
-    printf( "Coalesced transpose with block shared memory time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[3] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
 	
-    // Coalesced transpose with shared memory and matrix padding
+	
     checkCuda( cudaEventRecord(startEvent2, 0));
-    for (int i = 0; i < iterations2; i++) {
-        //gettimeofday( &start, NULL );
+    for (int i = 0; i < iterations2; i++)
         transposeNoBankConflicts<<<dimGrid2, dimBlock2>>>(A_d2, B_d2);
-        //gettimeofday( &end, NULL );
-			
-        //double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        //Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
-    }
     checkCuda( cudaEventRecord(stopEvent2, 0) );
     checkCuda( cudaEventSynchronize(stopEvent2) );
     checkCuda( cudaEventElapsedTime(&ms2, startEvent2, stopEvent2) );
-    printf( "Coalesced transpose with shared memory and matrix padding time: %.3f ms\n", ms2 );
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     Mem_Acc_Rate[4] = iterations2*2*width2*width2*sizeof(float)/(ms2*1e-3)/(float)(1e9);
-
-    printf("\n");
+	
 	
     printf( "Simple matrix copying: %.3f GB/s\n", Mem_Acc_Rate[0] );
     printf( "Matrix copy with shared memory: %.3f GB/s\n", Mem_Acc_Rate[1] );
