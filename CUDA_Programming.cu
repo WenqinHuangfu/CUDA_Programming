@@ -15,6 +15,18 @@
    case statements on each iteration).
 */
 
+inline
+cudaError_t checkCuda(cudaError_t result)
+{
+#if defined(DEBUG) || defined(_DEBUG)
+  if (result != cudaSuccess) {
+    fprintf(stderr, "CUDA Runtime Error: %s\n", cudaGetErrorString(result));
+    assert(result == cudaSuccess);
+  }
+#endif
+  return result;
+}
+
 const int TILE_WIDTH_GEMM = 16;
 const int TILE_DIM = 32;
 const int BLOCK_ROWS = 8;
