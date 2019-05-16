@@ -280,8 +280,8 @@ int main( int argc, char **argv ) {
     cudaMalloc((void**)&A_d2, m_size2*n_size2*sizeof(float));
     cudaMalloc((void**)&B_d2, m_size2*n_size2*sizeof(float));
     
-    dim3 dimGrid(width2/TILE_DIM, width2/TILE_DIM, 1);
-    dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
+    dim3 dimGrid2(width2/TILE_DIM, width2/TILE_DIM, 1);
+    dim3 dimBlock2(TILE_DIM, BLOCK_ROWS, 1);
 	
     cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     
