@@ -290,7 +290,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Mem_Acc_Rate[0] += 2*width2*width2*sizeof(float)/seconds;
+        Mem_Acc_Rate[0] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
 
     // Matrix copy with shared memory
@@ -300,7 +300,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Mem_Acc_Rate[1] += 2*width2*width2*sizeof(float)/seconds;
+        Mem_Acc_Rate[1] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
 	
     // Native transpose
@@ -310,7 +310,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Mem_Acc_Rate[2] += 2*width2*width2*sizeof(float)/seconds;
+        Mem_Acc_Rate[2] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
 	
     // Coalesced transpose with block shared memory
@@ -320,7 +320,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Mem_Acc_Rate[3] += 2*width2*width2*sizeof(float)/seconds;
+        Mem_Acc_Rate[3] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
 	
     // Coalesced transpose with shared memory and matrix padding
@@ -330,7 +330,7 @@ int main( int argc, char **argv ) {
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds;
+        Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
 	
     for (int i = 0; i < 5; i++) {
