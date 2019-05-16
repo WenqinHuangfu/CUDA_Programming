@@ -282,6 +282,8 @@ int main( int argc, char **argv ) {
     
     dim3 dimGrid2(1, 1, 1);
     dim3 dimBlock2(1, 1, 1);
+	
+    cudaMemcpy(A_d2, A_h2, m_size2*n_size2*sizeof(float), cudaMemcpyHostToDevice);
     
     // Simple matrix copying
     for (int i = 0; i < iterations2; i++) {
@@ -332,16 +334,23 @@ int main( int argc, char **argv ) {
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
         Mem_Acc_Rate[4] += 2*width2*width2*sizeof(float)/seconds/(float)(1e9);
     }
+
+    cudaMemcpy(B_h2, B_d2, m_size2*n_size2*sizeof(float), cudaMemcpyDeviceToHost);
 	
     for (int i = 0; i < 5; i++) {
     	Mem_Acc_Rate[i] /= iterations2;
     }
 	
-    printf( "Simple matrix copying: %.3f \n", Mem_Acc_Rate[0] );
-    printf( "Matrix copy with shared memory: %.3f \n", Mem_Acc_Rate[1] );
-    printf( "Native transpose: %.3f \n", Mem_Acc_Rate[2] );
-    printf( "Coalesced transpose with block shared memory: %.3f \n", Mem_Acc_Rate[3] );
-    printf( "Coalesced transpose with shared memory and matrix padding: %.3f \n", Mem_Acc_Rate[4] );
+    printf( "Simple matrix copying: %.3f GB/s\n", Mem_Acc_Rate[0] );
+    printf( "Matrix copy with shared memory: %.3f GB/s\n", Mem_Acc_Rate[1] );
+    printf( "Native transpose: %.3f GB/s\n", Mem_Acc_Rate[2] );
+    printf( "Coalesced transpose with block shared memory: %.3f GB/s\n", Mem_Acc_Rate[3] );
+    printf( "Coalesced transpose with shared memory and matrix padding: %.3f GB/s\n", Mem_Acc_Rate[4] );
 
+    cudaFree( A_d2 );
+    cudaFree( B_d2 );
+    free( A_h2 );
+    free( B_h2 );
+	
     return 0;
 }
