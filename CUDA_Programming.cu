@@ -221,50 +221,52 @@ int main( int argc, char **argv ) {
     
     printf("\n\n");
     
-    // GPU implementation
-    int m_size = 1600, n_size = 1600;
-    int width = 1600;
-    int iterations = 100;
+    // HW2: Question 1
+    int m_size1 = 1600, n_size1 = 1600;
+    int width1 = 1600;
+    int iterations1 = 100;
     float GFLOPs = 0;
     
-    float *A_h = (float *)malloc( m_size*n_size*sizeof(float));
-    float *B_h = (float *)malloc( m_size*n_size*sizeof(float));
-    float *C_h = (float *)malloc( m_size*n_size*sizeof(float));
+    float *A_h1 = (float *)malloc( m_size1*n_size1*sizeof(float));
+    float *B_h1 = (float *)malloc( m_size1*n_size1*sizeof(float));
+    float *C_h1 = (float *)malloc( m_size1*n_size1*sizeof(float));
 
-    float *A_d, *B_d, *C_d;
-    cudaMalloc((void**)&A_d, m_size*n_size*sizeof(float));
-    cudaMalloc((void**)&B_d, m_size*n_size*sizeof(float));
-    cudaMalloc((void**)&C_d, m_size*n_size*sizeof(float));
+    float *A_d1, *B_d1, *C_d1;
+    cudaMalloc((void**)&A_d1, m_size1*n_size1*sizeof(float));
+    cudaMalloc((void**)&B_d1, m_size1*n_size1*sizeof(float));
+    cudaMalloc((void**)&C_d1, m_size1*n_size1*sizeof(float));
     
-    dim3 dimGrid(100, 100, 1);
-    dim3 dimBlock(16, 16, 1);
+    dim3 dimGrid(1, 1, 1);
+    dim3 dimBlock(1, 1, 1);
     
-    cudaMemcpy(A_d, A_h, m_size*n_size*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(B_d, B_h, m_size*n_size*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(A_d1, A_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(B_d1, B_h1, m_size1*n_size1*sizeof(float), cudaMemcpyHostToDevice);
 		
-    for (int i = 0; i < iterations; i++) {
+    for (int i = 0; i < iterations1; i++) {
         gettimeofday( &start, NULL );
-        MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d, B_d, C_d, width);
+        MatrixMultiplyKernel<<<dimGrid, dimBlock>>>(A_d1, B_d1, C_d1, width1);
         gettimeofday( &end, NULL );
 			
         double seconds = (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
-        GFLOPs += 2e-9*width*width*width/seconds;
+        GFLOPs += 2e-9*width1*width1*width1/seconds;
     }
 		
-    cudaMemcpy(C_h, C_d, m_size*n_size*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(C_h1, C_d1, m_size1*n_size1*sizeof(float), cudaMemcpyDeviceToHost);
 
-    GFLOPs /= iterations;
+    GFLOPs /= iterations1;
 		
     printf( "%.3f GFLOPs/s\n", GFLOPs );
 
-    cudaFree( A_d );
-    cudaFree( B_d );
-    cudaFree( C_d );
-    free( A_h );
-    free( B_h );
-    free( C_h );
+    cudaFree( A_d1 );
+    cudaFree( B_d1 );
+    cudaFree( C_d1 );
+    free( A_h1 );
+    free( B_h1 );
+    free( C_h1 );
 
     printf("\n\n");
+	
+    // HW2: Question 2
 
     return 0;
 }
