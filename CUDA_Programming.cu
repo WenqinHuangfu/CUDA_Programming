@@ -225,7 +225,7 @@ int main( int argc, char **argv ) {
     // HW2: Question 1
     int m_size1 = 1600, n_size1 = 1600;
     int width1 = 1600;
-    int iterations1 = 1;
+    int iterations1 = 100;
     float GFLOPs = 0;
     
     float *A_h1 = (float *)malloc( m_size1*n_size1*sizeof(float));
@@ -270,7 +270,7 @@ int main( int argc, char **argv ) {
     // HW2: Question 2
     int m_size2 = 1024, n_size2 = 1024;
     int width2 = 1024;
-    int iterations2 = 1;
+    int iterations2 = 100;
     float Mem_Acc_Rate[5] = {0};
 
     float *A_h2 = (float *)malloc( m_size2*n_size2*sizeof(float));
